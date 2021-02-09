@@ -1,0 +1,125 @@
+From 09c12f51710beb49c88babd09a75e4fb3a9cd3e1 Mon Sep 17 00:00:00 2001
+From: clement_omongiahio <comongiahio@gmail.com>
+Date: Mon, 8 Feb 2021 23:27:30 +0100
+Subject: [PATCH] Create Patch File
+
+---
+ __pycache__/client3.cpython-39.pyc | Bin 0 -> 1050 bytes
+ client3.py                         |  19 +++++++++++++++----
+ client_test.py                     |  15 +++++++++++++--
+ 3 files changed, 28 insertions(+), 6 deletions(-)
+ create mode 100644 __pycache__/client3.cpython-39.pyc
+
+diff --git a/__pycache__/client3.cpython-39.pyc b/__pycache__/client3.cpython-39.pyc
+new file mode 100644
+index 0000000000000000000000000000000000000000..a9bca42111d0a5b8d101ba712caa72834eb1e691
+GIT binary patch
+literal 1050
+zcmYjQOK%f96t-tPnMq%iM_VefFh~d@Q3_%~6#@5Nl?s8Nl=2c*&@hcp+M$z~)OL`X
+zo36qSNtbL{@MFBai!1i5?&=;pZG|nLm(Lu3{*EV`ot+{${;jTl+N=}uk8^$>7$bk;
+z(mzm0B56Sc^*RuN*P#f#W`fB;L^2dL$z=4Eh*;KSj5>k3O!foy9j0I!Y9l(LkI6?V
+zW*{8T0{uKUJ_pfw9@v;2lVf^J$LF0E7vKWs-4qughKnQGV&alm5Q}07F3UPxf(2NF
+zr4CypBTC7E!RQnuumnq^;3W23($}Oh{S&d1&B4_@V|vZi)uL)=#a^XNbM4OBoz;Ur
+zsKY;U`S9<f{1+vpjq7YgXfa&txbzx|A#$)xj;L`~uuNpQjOQN(-e+fiI1G;1kPd@k
+zIAk4$D561=Z>dW5+rYD;;8lm4J>VsP1j)Z-MISUb72kytRAw-V%gkiGDlZMUkv3I(
+z-^Qlur8~K_QBUP<nE09AZ%`X`iYhaW$VLbK%76+GtgT~iI!Uc#+Qd}uLf?pTo&WFt
+zdb9ObgVL?dt(WgNw%4~e{(AHD-A3!#){FHO1MR&PgI})PUFjX(Yqg6UN^|da@6gWd
+zf_aPpw>&^BrTt3^6FQHRQ8k0HwnK3`ob9;vTsjQCJHg-@e*%W%o%71E;^C$l&q{e>
+z@9>}QI}f-Ki1;Mq)Y$PG6ETf>HbH3Hu3Q5>?IAEV=XcVyo8@Ji4sN`1EJ=P{^UUy@
+z$W!yWzQysXUi%}^Y77!z3G*7uVy>@>BHy{K03VGuqBij@GkF&T`>d-{)D!}*x*~e@
+zc4Pa4rJJ6Jv*XLG3u$UujxDkg=I(-}sg1CCQj7Ssa*UO$9+bA$sZ=*JmMO@jt@+++
+z6+1fI#Z=;i`%8US{ktg5Z-ls}s0k|%y7>AEc(i~aeFa5A{R~;if~20rNjOirZ{T9^
+EKV-)V`v3p{
+
+literal 0
+HcmV?d00001
+
+diff --git a/client3.py b/client3.py
+index f1771c3..1ac577c 100644
+--- a/client3.py
++++ b/client3.py
+@@ -35,25 +35,36 @@ def getDataPoint(quote):
+ 	stock = quote['stock']
+ 	bid_price = float(quote['top_bid']['price'])
+ 	ask_price = float(quote['top_ask']['price'])
+-	price = bid_price
++	price = (bid_price + ask_price)/2
+ 	return stock, bid_price, ask_price, price
+ 
+ def getRatio(price_a, price_b):
+ 	""" Get ratio of price_a and price_b """
+ 	""" ------------- Update this function ------------- """
+ 	""" Also create some unit tests for this function in client_test.py """
+-	return 1
++	if (price_b == 0):
++		# when price_b is 0 avoid throwing ZeroDivisionError
++		return
++	return price_a/price_b 
+ 
+ # Main
+ if __name__ == "__main__":
+ 
+ 	# Query the price once every N seconds.
+-	for _ in iter(range(N)):
++	for _ in range(N):
+ 		quotes = json.loads(urllib.request.urlopen(QUERY.format(random.random())).read())
+ 
+ 		""" ----------- Update to get the ratio --------------- """
++		prices = {}
+ 		for quote in quotes:
++			
+ 			stock, bid_price, ask_price, price = getDataPoint(quote)
++			
++			prices[stock] = price
++			
+ 			print ("Quoted %s at (bid:%s, ask:%s, price:%s)" % (stock, bid_price, ask_price, price))
++			   
++		print ("Ratio %s" % (getRatio(prices['ABC'], prices['DEF'])))
+ 
+-		print ("Ratio %s" % getRatio(price, price))
++			
++	
+diff --git a/client_test.py b/client_test.py
+index af2bf26..25365ad 100644
+--- a/client_test.py
++++ b/client_test.py
+@@ -1,5 +1,5 @@
+ import unittest
+-from client3 import getDataPoint
++from client3 import *
+ 
+ class ClientTest(unittest.TestCase):
+   def test_getDataPoint_calculatePrice(self):
+@@ -8,6 +8,8 @@ class ClientTest(unittest.TestCase):
+       {'top_ask': {'price': 121.68, 'size': 4}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 117.87, 'size': 81}, 'id': '0.109974697771', 'stock': 'DEF'}
+     ]
+     """ ------------ Add the assertion below ------------ """
++    for quote in quotes:
++      self.assertEqual(getDataPoint(quote), (quote['stock'], quote['top_bid'] ['price'], quote['top_ask'] ['price'], quote['top_bid'] ['price'] + quote['top_ask'] ['price'])/2))
+ 
+   def test_getDataPoint_calculatePriceBidGreaterThanAsk(self):
+     quotes = [
+@@ -15,10 +17,19 @@ class ClientTest(unittest.TestCase):
+       {'top_ask': {'price': 121.68, 'size': 4}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 117.87, 'size': 81}, 'id': '0.109974697771', 'stock': 'DEF'}
+     ]
+     """ ------------ Add the assertion below ------------ """
+-
++  for quote in quotes:
++      self.assertEqual(getDataPoint(quote), (quote['stock'], quote['top_bid'] ['price'], quote['top_ask'] ['price'], quote['top_bid'] ['price'] + quote['top_ask'] ['price'])/2))
+ 
+   """ ------------ Add more unit tests ------------ """
+ 
++   def test_getDataPoint_calculatePrice(self):
++    quotes = [
++      {'top_ask': {'price': 0, 'size': 36}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 0, 'size': 109}, 'id': '0.109974697771', 'stock': 'ABC'},
++      {'top_ask': {'price': 0, 'size': 4}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 0, 'size': 81}, 'id': '0.109974697771', 'stock': 'DEF'}
++    ]
++  for quote in quotes:
++      self.assertEqual(getDataPoint(quote), (quote['stock'], quote['top_bid'] ['price'], quote['top_ask'] ['price'], quote['top_bid'] ['price'] + quote['top_ask'] ['price'])/2))
++
+ 
+ 
+ if __name__ == '__main__':
+-- 
+2.30.0.windows.2
+
